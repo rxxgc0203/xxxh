@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极客智能财务协同管理系统</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3a7bd5;
+            --secondary-color: #4a90e2;
+            --accent-color: #00d2ff;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-container {
+            margin-top: 20px;
+            padding-bottom: 40px;
+        }
+        
+        .module-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        
+        .module-icon {
+            font-size: 1.8rem;
+            margin-right: 10px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background-color: #f1f5fd;
+            font-weight: 600;
+            padding: 12px 15px;
+        }
+        
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .form-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-container {
+            height: 400px;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .invoice-preview {
+            border: 2px dashed #cce5ff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8fbff;
+            margin-top: 15px;
+        }
+        
+        .invoice-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 5px;
+        }
+        
+        .mfa-option {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .mfa-option:hover, .mfa-option.active {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+        }
+        
+        .mfa-option i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .navbar-nav {
+                padding-top: 10px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .login-container {
+                margin: 10% 20px;
+                padding: 1.5rem;
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 8px 10px;
+            }
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 6px;
+            padding: 8px 20px;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            padding-top: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 10px 20px;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            background-color: transparent;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .invoice-info-row {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div id="login-page" class="login-container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold" style="color: var(--primary-color);">极客智能财务协同系统</h2>
+            <p class="text-muted">专业财务协同管理平台</p>
+        </div>
+        
+        <form id="login-form">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="username" placeholder="请输入用户名" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <input type="password" class="form-control" id="password" placeholder="请输入密码" required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">多因素认证方式</label>
+                <div class="mfa-option" id="sms-option">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-phone"></i>
+                        <div>
+                            <h6 class="mb-1">短信验证码</h6>
+                            <p class="text-muted small mb-0">向注册手机发送验证码</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mfa-option" id="app-option">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <h6 class="mb-1">身份验证器应用</h6>
+                            <p class="text-muted small mb-0">使用Google Authenticator等应用</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3" id="mfa-sms-section">
+                <label for="sms-code" class="form-label">短信验证码</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="sms-code" placeholder="请输入6位验证码">
+                    <button class="btn btn-outline-secondary" type="button" id="send-sms-btn">发送验证码</button>
+                </div>
+                <div class="form-text">验证码将发送到注册手机尾号****58</div>
+            </div>
+            
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary-custom">登录系统</button>
+            </div>
+            
+            <div class="text-center">
+                <a href="#" class="text-decoration-none small">忘记密码？</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 主系统界面 -->
+    <div id="main-system" class="hidden">
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" href="#">
+                    <i class="bi bi-calculator me-2"></i>极客智能财务协同系统
+                </a>
+                
+                <button class="navbar-toggler mobile-menu-btn" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-module="general-ledger">
+                                <i class="bi bi-journal-text me-1"></i>总账管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-module="expense-reimbursement">
+                                <i class="bi bi-receipt me-1"></i>费用报销
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-module="business-collaboration">
+                                <i class="bi bi-people me-1"></i>业务协同
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-module="intelligent-analysis">
+                                <i class="bi bi-graph-up me-1"></i>智能分析
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="navbar-nav">
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span id="current-user">管理员</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>个人中心</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>系统设置</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logout-btn"><i class="bi bi-box-arrow-right me-2"></i>退出登录</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <div class="container-fluid main-container">
+            <!-- 总账管理模块 -->
+            <div id="general-ledger" class="module-content">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-journal-plus module-icon"></i>凭证录入</h5>
+                            <form id="voucher-form">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="voucher-date" class="form-label">凭证日期</label>
+                                        <input type="date" class="form-control" id="voucher-date" value="2023-10-15" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="voucher-type" class="form-label">凭证类型</label>
+                                        <select class="form-select" id="voucher-type" required>
+                                            <option value="payment">付款凭证</option>
+                                            <option value="receipt">收款凭证</option>
+                                            <option value="transfer">转账凭证</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="voucher-summary" class="form-label">摘要</label>
+                                    <input type="text" class="form-control" id="voucher-summary" placeholder="请输入凭证摘要" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">凭证明细</label>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>科目代码</th>
+                                                <th>科目名称</th>
+                                                <th>借方金额</th>
+                                                <th>贷方金额</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="voucher-details">
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="1001"></td>
+                                                <td>库存现金</td>
+                                                <td><input type="number" class="form-control form-control-sm" value="5000"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="0"></td>
+                                                <td><button type="button" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="text" class="form-control form-control-sm" value="6001"></td>
+                                                <td>主营业务收入</td>
+                                                <td><input type="number" class="form-control form-control-sm" value="0"></td>
+                                                <td><input type="number" class="form-control form-control-sm" value="5000"></td>
+                                                <td><button type="button" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-detail">添加明细行</button>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary-custom">保存凭证</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-card-list module-icon"></i>总账概览</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>科目代码</th>
+                                            <th>科目名称</th>
+                                            <th>余额</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1001</td>
+                                            <td>库存现金</td>
+                                            <td class="text-success">25,430.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1002</td>
+                                            <td>银行存款</td>
+                                            <td class="text-success">1,250,680.50</td>
+                                        </tr>
+                                        <tr>
+                                            <td>1122</td>
+                                            <td>应收账款</td>
+                                            <td class="text-success">356,200.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2202</td>
+                                            <td>应付账款</td>
+                                            <td class="text-danger">189,500.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>6001</td>
+                                            <td>主营业务收入</td>
+                                            <td class="text-success">2,850,300.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h5 class="mb-3"><i class="bi bi-journals module-icon"></i>凭证查询</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="search-period" class="form-label">期间</label>
+                            <select class="form-select" id="search-period">
+                                <option value="current-month">本月</option>
+                                <option value="last-month">上月</option>
+                                <option value="current-quarter">本季度</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search-status" class="form-label">状态</label>
+                            <select class="form-select" id="search-status">
+                                <option value="all">全部</option>
+                                <option value="draft">草稿</option>
+                                <option value="posted">已过账</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary-custom w-100">查询</button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover data-table">
+                            <thead>
+                                <tr>
+                                    <th>凭证号</th>
+                                    <th>日期</th>
+                                    <th>凭证类型</th>
+                                    <th>摘要</th>
+                                    <th>借方金额</th>
+                                    <th>贷方金额</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>记-202310001</td>
+                                    <td>2023-10-10</td>
+                                    <td>转账凭证</td>
+                                    <td>支付办公室租金</td>
+                                    <td>8,000.00</td>
+                                    <td>8,000.00</td>
+                                    <td><span class="status-badge status-approved">已过账</span></td>
+                                </tr>
+                                <tr>
+                                    <td>记-202310002</td>
+                                    <td>2023-10-12</td>
+                                    <td>收款凭证</td>
+                                    <td>收到客户A货款</td>
+                                    <td>25,000.00</td>
+                                    <td>25,000.00</td>
+                                    <td><span class="status-badge status-approved">已过账</span></td>
+                                </tr>
+                                <tr>
+                                    <td>记-202310003</td>
+                                    <td>2023-10-15</td>
+                                    <td>付款凭证</td>
+                                    <td>支付员工工资</td>
+                                    <td>65,000.00</td>
+                                    <td>65,000.00</td>
+                                    <td><span class="status-badge status-pending">待审核</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 费用报销模块 -->
+            <div id="expense-reimbursement" class="module-content hidden">
+                <div class="row">
+                    <div class="col-lg-7">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-receipt-cutoff module-icon"></i>报销单填写</h5>
+                            <form id="expense-form">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="expense-type" class="form-label">报销类型</label>
+                                        <select class="form-select" id="expense-type" required>
+                                            <option value="business-trip">差旅费</option>
+                                            <option value="office">办公费</option>
+                                            <option value="entertainment">业务招待费</option>
+                                            <option value="transportation">交通费</option>
+                                            <option value="other">其他</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="expense-date" class="form-label">报销日期</label>
+                                        <input type="date" class="form-control" id="expense-date" value="2023-10-15" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="expense-amount" class="form-label">报销金额(元)</label>
+                                    <input type="number" class="form-control" id="expense-amount" placeholder="请输入报销金额" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="expense-desc" class="form-label">费用说明</label>
+                                    <textarea class="form-control" id="expense-desc" rows="3" placeholder="请详细描述费用支出事由" required></textarea>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">发票上传与识别</label>
+                                    <div class="invoice-preview">
+                                        <div id="invoice-upload-area">
+                                            <i class="bi bi-receipt display-4 text-primary"></i>
+                                            <p class="mt-2">点击上传或拖拽发票图片</p>
+                                            <p class="text-muted small">支持JPG、PNG格式，最大5MB</p>
+                                            <button type="button" class="btn btn-outline-primary mt-2" id="upload-invoice-btn">
+                                                <i class="bi bi-cloud-upload me-2"></i>选择发票图片
+                                            </button>
+                                            <input type="file" id="invoice-file" accept="image/*" class="d-none">
+                                        </div>
+                                        <div id="invoice-preview" class="hidden">
+                                            <img id="invoice-image" src="" alt="发票预览">
+                                            <div class="mt-3">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" id="remove-invoice-btn">
+                                                    <i class="bi bi-trash me-1"></i>移除图片
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-primary-custom" id="ocr-recognition-btn">
+                                            <i class="bi bi-cpu me-2"></i>OCR发票识别
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="ocr-results" class="hidden">
+                                    <h6 class="mb-3">识别结果</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="invoice-info-row">
+                                                <span class="text-muted">发票代码：</span>
+                                                <span id="invoice-code">031002100111</span>
+                                            </div>
+                                            <div class="invoice-info-row">
+                                                <span class="text-muted">发票号码：</span>
+                                                <span id="invoice-number">12345678</span>
+                                            </div>
+                                            <div class="invoice-info-row">
+                                                <span class="text-muted">开票日期：</span>
+                                                <span id="invoice-date">2023-10-10</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="invoice-info-row">
+                                                <span class="text-muted">销售方：</span>
+                                                <span id="invoice-seller">北京极客科技有限公司</span>
+                                            </div>
+                                            <div class="invoice-info-row">
+                                                <span class="text-muted">金额(元)：</span>
+                                                <span id="invoice-amount">850.00</span>
+                                            </div>
+                                            <div class="invoice-info-row">
+                                                <span class="text-muted">税额(元)：</span>
+                                                <span id="invoice-tax">110.50</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-primary-custom">提交报销单</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-5">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-clock-history module-icon"></i>报销记录</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>报销单号</th>
+                                            <th>类型</th>
+                                            <th>金额</th>
+                                            <th>状态</th>
+                                            <th>日期</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>BX202310001</td>
+                                            <td>差旅费</td>
+                                            <td>2,850.00</td>
+                                            <td><span class="status-badge status-approved">已支付</span></td>
+                                            <td>2023-10-05</td>
+                                        </tr>
+                                        <tr>
+                                            <td>BX202310002</td>
+                                            <td>办公费</td>
+                                            <td>650.00</td>
+                                            <td><span class="status-badge status-pending">审核中</span></td>
+                                            <td>2023-10-08</td>
+                                        </tr>
+                                        <tr>
+                                            <td>BX202310003</td>
+                                            <td>业务招待</td>
+                                            <td>1,200.00</td>
+                                            <td><span class="status-badge status-rejected">被驳回</span></td>
+                                            <td>2023-10-10</td>
+                                        </tr>
+                                        <tr>
+                                            <td>BX202310004</td>
+                                            <td>交通费</td>
+                                            <td>350.00</td>
+                                            <td><span class="status-badge status-approved">已支付</span></td>
+                                            <td>2023-10-12</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section mt-4">
+                            <h5 class="mb-3"><i class="bi bi-pie-chart module-icon"></i>月度报销统计</h5>
+                            <div id="expense-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 业务协同模块 -->
+            <div id="business-collaboration" class="module-content hidden">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-chat-left-text module-icon"></i>协同审批流</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>审批单号</th>
+                                            <th>事项</th>
+                                            <th>发起人</th>
+                                            <th>当前环节</th>
+                                            <th>状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>SP202310001</td>
+                                            <td>采购服务器设备</td>
+                                            <td>张技术</td>
+                                            <td>财务审批</td>
+                                            <td><span class="status-badge status-pending">审批中</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">处理</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>SP202310002</td>
+                                            <td>办公室租赁合同</td>
+                                            <td>李行政</td>
+                                            <td>法务审核</td>
+                                            <td><span class="status-badge status-pending">审批中</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">处理</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>SP202310003</td>
+                                            <td>市场推广方案</td>
+                                            <td>王市场</td>
+                                            <td>部门审批</td>
+                                            <td><span class="status-badge status-approved">已通过</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">查看</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>SP202310004</td>
+                                            <td>员工转正申请</td>
+                                            <td>刘人事</td>
+                                            <td>部门审批</td>
+                                            <td><span class="status-badge status-rejected">被驳回</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">查看</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#newApprovalModal">
+                                    <i class="bi bi-plus-circle me-2"></i>新建审批
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-calendar-check module-icon"></i>待办事项</h5>
+                            <div class="list-group">
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">审核报销单 BX202310002</h6>
+                                        <small class="text-muted">提交人：王小明 | 2023-10-08</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">1</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">审批采购单 CG202310005</h6>
+                                        <small class="text-muted">提交人：张采购 | 2023-10-10</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">2</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">确认付款单 FK202310003</h6>
+                                        <small class="text-muted">提交人：李财务 | 2023-10-12</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">3</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section mt-4">
+                            <h5 class="mb-3"><i class="bi bi-bar-chart module-icon"></i>协同效率</h5>
+                            <div class="d-flex justify-content-around text-center">
+                                <div>
+                                    <h3 class="text-primary">12.5</h3>
+                                    <small class="text-muted">平均处理时长(小时)</small>
+                                </div>
+                                <div>
+                                    <h3 class="text-success">95%</h3>
+                                    <small class="text-muted">审批通过率</small>
+                                </div>
+                                <div>
+                                    <h3 class="text-warning">3.2</h3>
+                                    <small class="text-muted">平均审批节点</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能分析模块 -->
+            <div id="intelligent-analysis" class="module-content hidden">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-graph-up-arrow module-icon"></i>盈利趋势分析</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="business-line" class="form-label">业务线</label>
+                                    <select class="form-select" id="business-line">
+                                        <option value="all">全部业务线</option>
+                                        <option value="software">软件产品</option>
+                                        <option value="service">技术服务</option>
+                                        <option value="cloud">云服务</option>
+                                        <option value="consulting">咨询业务</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="time-range" class="form-label">时间范围</label>
+                                    <select class="form-select" id="time-range">
+                                        <option value="2023">2023年度</option>
+                                        <option value="2022">2022年度</option>
+                                        <option value="2021">2021年度</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button class="btn btn-primary-custom w-100" id="update-chart">更新图表</button>
+                                </div>
+                            </div>
+                            <div id="profit-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="form-section">
+                            <h5 class="mb-3"><i class="bi bi-pie-chart-fill module-icon"></i>风险等级分布</h5>
+                            <div id="risk-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section mt-4">
+                    <h5 class="mb-3"><i class="bi bi-table module-icon"></i>财务健康指标</h5>
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-primary">流动比率</h5>
+                                    <h3 class="card-text">2.3</h3>
+                                    <p class="card-text text-success">
+                                        <i class="bi bi-arrow-up"></i> 较上期提升0.2
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-primary">资产负债率</h5>
+                                    <h3 class="card-text">45%</h3>
+                                    <p class="card-text text-danger">
+                                        <i class="bi bi-arrow-down"></i> 较上期下降3%
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-primary">净利润率</h5>
+                                    <h3 class="card-text">18.5%</h3>
+                                    <p class="card-text text-success">
+                                        <i class="bi bi-arrow-up"></i> 较上期提升1.2%
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-primary">应收账款周转</h5>
+                                    <h3 class="card-text">8.2</h3>
+                                    <p class="card-text text-success">
+                                        <i class="bi bi-arrow-up"></i> 较上期提升0.5
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建审批模态框 -->
+    <div class="modal fade" id="newApprovalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">新建协同审批</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-approval-form">
+                        <div class="mb-3">
+                            <label for="approval-title" class="form-label">审批事项</label>
+                            <input type="text" class="form-control" id="approval-title" placeholder="请输入审批事项标题" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="approval-type" class="form-label">审批类型</label>
+                            <select class="form-select" id="approval-type" required>
+                                <option value="purchase">采购审批</option>
+                                <option value="contract">合同审批</option>
+                                <option value="payment">付款审批</option>
+                                <option value="personnel">人事审批</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="approval-content" class="form-label">审批内容</label>
+                            <textarea class="form-control" id="approval-content" rows="4" placeholder="请详细描述审批事项内容" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="approval-amount" class="form-label">涉及金额(元)</label>
+                            <input type="number" class="form-control" id="approval-amount" placeholder="请输入金额，如无可不填">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary-custom" id="submit-approval-btn">提交审批</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化变量
+            let currentModule = 'general-ledger';
+            
+            // 登录相关功能
+            const loginPage = document.getElementById('login-page');
+            const mainSystem = document.getElementById('main-system');
+            const loginForm = document.getElementById('login-form');
+            const logoutBtn = document.getElementById('logout-btn');
+            const sendSmsBtn = document.getElementById('send-sms-btn');
+            const smsOption = document.getElementById('sms-option');
+            const appOption = document.getElementById('app-option');
+            const mfaSmsSection = document.getElementById('mfa-sms-section');
+            
+            // 模拟登录
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                
+                // 简单验证
+                if(username && document.getElementById('password').value) {
+                    document.getElementById('current-user').textContent = username;
+                    
+                    // 显示主系统，隐藏登录页
+                    loginPage.classList.add('hidden');
+                    mainSystem.classList.remove('hidden');
+                    
+                    // 显示总账管理模块
+                    showModule('general-ledger');
+                } else {
+                    alert('请输入用户名和密码');
+                }
+            });
+            
+            // 多因素认证选择
+            smsOption.addEventListener('click', function() {
+                smsOption.classList.add('active');
+                appOption.classList.remove('active');
+                mfaSmsSection.classList.remove('hidden');
+            });
+            
+            appOption.addEventListener('click', function() {
+                appOption.classList.add('active');
+                smsOption.classList.remove('active');
+                mfaSmsSection.classList.add('hidden');
+            });
+            
+            // 默认选择短信验证码
+            smsOption.click();
+            
+            // 发送短信验证码
+            sendSmsBtn.addEventListener('click', function() {
+                const originalText = sendSmsBtn.textContent;
+                let countdown = 60;
+                
+                sendSmsBtn.disabled = true;
+                sendSmsBtn.textContent = `${countdown}秒后重新发送`;
+                
+                const timer = setInterval(function() {
+                    countdown--;
+                    sendSmsBtn.textContent = `${countdown}秒后重新发送`;
+                    
+                    if(countdown <= 0) {
+                        clearInterval(timer);
+                        sendSmsBtn.disabled = false;
+                        sendSmsBtn.textContent = originalText;
+                    }
+                }, 1000);
+                
+                // 模拟发送验证码
+                alert('验证码已发送到注册手机尾号****58，验证码为：123456');
+            });
+            
+            // 退出登录
+            logoutBtn.addEventListener('click', function() {
+                mainSystem.classList.add('hidden');
+                loginPage.classList.remove('hidden');
+                loginForm.reset();
+                smsOption.click();
+            });
+            
+            // 导航切换
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 更新活跃状态
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示对应模块
+                    const module = this.getAttribute('data-module');
+                    showModule(module);
+                });
+            });
+            
+            // 显示模块函数
+            function showModule(moduleId) {
+                // 隐藏所有模块
+                document.querySelectorAll('.module-content').forEach(module => {
+                    module.classList.add('hidden');
+                });
+                
+                // 显示目标模块
+                document.getElementById(moduleId).classList.remove('hidden');
+                currentModule = moduleId;
+                
+                // 如果显示智能分析模块，初始化图表
+                if(moduleId === 'intelligent-analysis') {
+                    initCharts();
+                }
+                
+                // 如果显示费用报销模块，初始化发票上传
+                if(moduleId === 'expense-reimbursement') {
+                    initInvoiceUpload();
+                }
+            }
+            
+            // 发票上传功能
+            function initInvoiceUpload() {
+                const uploadBtn = document.getElementById('upload-invoice-btn');
+                const fileInput = document.getElementById('invoice-file');
+                const invoicePreview = document.getElementById('invoice-preview');
+                const invoiceImage = document.getElementById('invoice-image');
+                const removeBtn = document.getElementById('remove-invoice-btn');
+                const uploadArea = document.getElementById('invoice-upload-area');
+                const ocrBtn = document.getElementById('ocr-recognition-btn');
+                const ocrResults = document.getElementById('ocr-results');
+                
+                // 点击上传按钮触发文件选择
+                uploadBtn.addEventListener('click', function() {
+                    fileInput.click();
+                });
+                
+                // 文件选择变化
+                fileInput.addEventListener('change', function(e) {
+                    if(this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            invoiceImage.src = e.target.result;
+                            uploadArea.classList.add('hidden');
+                            invoicePreview.classList.remove('hidden');
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+                
+                // 移除图片
+                removeBtn.addEventListener('click', function() {
+                    fileInput.value = '';
+                    uploadArea.classList.remove('hidden');
+                    invoicePreview.classList.add('hidden');
+                    ocrResults.classList.add('hidden');
+                });
+                
+                // OCR识别按钮
+                ocrBtn.addEventListener('click', function() {
+                    if(fileInput.files.length === 0) {
+                        alert('请先上传发票图片');
+                        return;
+                    }
+                    
+                    // 模拟OCR识别过程
+                    ocrBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>识别中...';
+                    ocrBtn.disabled = true;
+                    
+                    setTimeout(function() {
+                        // 模拟OCR识别结果
+                        ocrResults.classList.remove('hidden');
+                        ocrBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>识别完成';
+                        ocrBtn.disabled = false;
+                        
+                        // 自动填充表单
+                        document.getElementById('expense-amount').value = 850.00;
+                        document.getElementById('expense-desc').value = '购买办公用品 - 发票代码: 031002100111, 发票号码: 12345678';
+                        
+                        // 3秒后恢复按钮文本
+                        setTimeout(function() {
+                            ocrBtn.innerHTML = '<i class="bi bi-cpu me-2"></i>OCR发票识别';
+                        }, 3000);
+                    }, 2000);
+                });
+            }
+            
+            // 初始化图表
+            function initCharts() {
+                // 盈利趋势折线图
+                const profitChart = echarts.init(document.getElementById('profit-chart'));
+                const profitOption = {
+                    title: {
+                        text: '2023年各业务线盈利趋势(万元)',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 16
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: '{b}<br/>{a}: {c}万元'
+                    },
+                    legend: {
+                        data: ['软件产品', '技术服务', '云服务', '咨询业务'],
+                        top: 30
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '利润(万元)'
+                    },
+                    series: [
+                        {
+                            name: '软件产品',
+                            type: 'line',
+                            smooth: true,
+                            data: [120, 135, 150, 180, 210, 230, 250, 280, 300, 320, 340, 360],
+                            itemStyle: { color: '#3a7bd5' },
+                            lineStyle: { width: 3 }
+                        },
+                        {
+                            name: '技术服务',
+                            type: 'line',
+                            smooth: true,
+                            data: [80, 90, 100, 120, 150, 160, 180, 200, 220, 240, 260, 280],
+                            itemStyle: { color: '#00d2ff' },
+                            lineStyle: { width: 3 }
+                        },
+                        {
+                            name: '云服务',
+                            type: 'line',
+                            smooth: true,
+                            data: [50, 60, 70, 90, 120, 150, 180, 210, 240, 270, 300, 330],
+                            itemStyle: { color: '#4A90E2' },
+                            lineStyle: { width: 3 }
+                        },
+                        {
+                            name: '咨询业务',
+                            type: 'line',
+                            smooth: true,
+                            data: [30, 40, 50, 60, 80, 90, 100, 120, 130, 140, 150, 160],
+                            itemStyle: { color: '#9b59b6' },
+                            lineStyle: { width: 3 }
+                        }
+                    ]
+                };
+                profitChart.setOption(profitOption);
+                
+                // 风险等级饼图
+                const riskChart = echarts.init(document.getElementById('risk-chart'));
+                const riskOption = {
+                    title: {
+                        text: '项目风险等级分布',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 16
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c}个 ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        top: 30
+                    },
+                    series: [
+                        {
+                            name: '风险等级',
+                            type: 'pie',
+                            radius: ['40%', '70%'],
+                            center: ['60%', '60%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: {
+                                borderRadius: 10,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            label: {
+                                show: false,
+                                position: 'center'
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: 18,
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: [
+                                { value: 12, name: '低风险', itemStyle: { color: '#2ecc71' } },
+                                { value: 8, name: '中风险', itemStyle: { color: '#f39c12' } },
+                                { value: 3, name: '高风险', itemStyle: { color: '#e74c3c' } }
+                            ]
+                        }
+                    ]
+                };
+                riskChart.setOption(riskOption);
+                
+                // 费用报销模块图表
+                const expenseChart = echarts.init(document.getElementById('expense-chart'));
+                const expenseOption = {
+                    title: {
+                        text: '月度报销统计',
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 14
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c}元 ({d}%)'
+                    },
+                    legend: {
+                        bottom: 0,
+                        left: 'center'
+                    },
+                    series: [
+                        {
+                            name: '报销类型',
+                            type: 'pie',
+                            radius: '60%',
+                            center: ['50%', '45%'],
+                            data: [
+                                { value: 2850, name: '差旅费', itemStyle: { color: '#3498db' } },
+                                { value: 650, name: '办公费', itemStyle: { color: '#2ecc71' } },
+                                { value: 1200, name: '业务招待', itemStyle: { color: '#e74c3c' } },
+                                { value: 350, name: '交通费', itemStyle: { color: '#f39c12' } },
+                                { value: 800, name: '其他', itemStyle: { color: '#9b59b6' } }
+                            ],
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                expenseChart.setOption(expenseOption);
+                
+                // 窗口大小变化时重绘图表
+                window.addEventListener('resize', function() {
+                    profitChart.resize();
+                    riskChart.resize();
+                    if(expenseChart) expenseChart.resize();
+                });
+                
+                // 更新图表按钮
+                document.getElementById('update-chart').addEventListener('click', function() {
+                    // 模拟数据更新
+                    const businessLine = document.getElementById('business-line').value;
+                    const timeRange = document.getElementById('time-range').value;
+                    
+                    // 这里可以添加根据选择更新图表的逻辑
+                    alert(`已更新图表数据: 业务线-${businessLine}, 时间范围-${timeRange}`);
+                });
+            }
+            
+            // 添加凭证明细行
+            document.getElementById('add-detail').addEventListener('click', function() {
+                const tbody = document.getElementById('voucher-details');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td><input type="text" class="form-control form-control-sm" placeholder="科目代码"></td>
+                    <td><input type="text" class="form-control form-control-sm" placeholder="科目名称"></td>
+                    <td><input type="number" class="form-control form-control-sm" placeholder="借方金额" value="0"></td>
+                    <td><input type="number" class="form-control form-control-sm" placeholder="贷方金额" value="0"></td>
+                    <td><button type="button" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button></td>
+                `;
+                tbody.appendChild(newRow);
+                
+                // 为新行的删除按钮添加事件
+                newRow.querySelector('.btn-danger').addEventListener('click', function() {
+                    tbody.removeChild(newRow);
+                });
+            });
+            
+            // 表单提交处理
+            document.getElementById('voucher-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('凭证保存成功！');
+            });
+            
+            document.getElementById('expense-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('报销单提交成功！');
+            });
+            
+            document.getElementById('submit-approval-btn').addEventListener('click', function() {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newApprovalModal'));
+                alert('审批单提交成功！');
+                modal.hide();
+            });
+            
+            // 为所有删除按钮添加事件
+            document.querySelectorAll('#voucher-details .btn-danger').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    document.getElementById('voucher-details').removeChild(row);
+                });
+            });
+            
+            // 初始化费用报销模块的发票上传功能
+            if(document.getElementById('expense-reimbursement').classList.contains('hidden') === false) {
+                initInvoiceUpload();
+            }
+            
+            // 页面加载完成后初始化图表
+            if(document.getElementById('intelligent-analysis').classList.contains('hidden') === false) {
+                initCharts();
+            }
+        });
+    </script>
+</body>
+</html>
